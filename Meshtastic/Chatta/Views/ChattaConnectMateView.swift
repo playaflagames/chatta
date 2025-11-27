@@ -400,7 +400,7 @@ struct ChattaConnectMateView: View {
                                 Spacer()
 
                                 // Signal strength indicator
-                                SignalStrengthIndicator(rssi: peripheral.rssi)
+                                ChattaSignalStrengthIndicator(rssi: peripheral.rssi)
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
@@ -768,7 +768,7 @@ struct ChattaConnectMateView: View {
 }
 
 // MARK: - Signal Strength Indicator
-struct SignalStrengthIndicator: View {
+struct ChattaSignalStrengthIndicator: View {
     let rssi: Int
 
     var signalBars: Int {
