@@ -7,6 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		CHA0000127000001000CHATT /* ChattaAppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010127000001000CHATT /* ChattaAppConfig.swift */; };
+		CHA0000227000002000CHATT /* ChattaAppRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010227000002000CHATT /* ChattaAppRootView.swift */; };
+		CHA0000327000003000CHATT /* ChattaTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010327000003000CHATT /* ChattaTheme.swift */; };
+		CHA0000427000004000CHATT /* ChattaLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010427000004000CHATT /* ChattaLogo.swift */; };
+		CHA0000527000005000CHATT /* ChattaComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010527000005000CHATT /* ChattaComponents.swift */; };
+		CHA0000627000006000CHATT /* ChattaQRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010627000006000CHATT /* ChattaQRScanner.swift */; };
+		CHA0000727000007000CHATT /* ChattaNavigationState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010727000007000CHATT /* ChattaNavigationState.swift */; };
+		CHA0000827000008000CHATT /* ChattaHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010827000008000CHATT /* ChattaHomeView.swift */; };
+		CHA0000927000009000CHATT /* ChattaChatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0010927000009000CHATT /* ChattaChatsView.swift */; };
+		CHA0001027000010000CHATT /* ChattaChatDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0011027000010000CHATT /* ChattaChatDetailView.swift */; };
+		CHA0001127000011000CHATT /* ChattaSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0011127000011000CHATT /* ChattaSettingsView.swift */; };
+		CHA0001227000012000CHATT /* ChattaConnectMateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CHA0011227000012000CHATT /* ChattaConnectMateView.swift */; };
 		231B3F212D087A4C0069A07D /* MetricTableColumn.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F202D087A4C0069A07D /* MetricTableColumn.swift */; };
 		231B3F222D087A4C0069A07D /* MetricsColumnList.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */; };
 		231B3F252D087C3C0069A07D /* EnvironmentDefaultColumns.swift in Sources */ = {isa = PBXBuildFile; fileRef = 231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */; };
@@ -275,6 +287,18 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		CHA0010127000001000CHATT /* ChattaAppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaAppConfig.swift; sourceTree = "<group>"; };
+		CHA0010227000002000CHATT /* ChattaAppRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaAppRootView.swift; sourceTree = "<group>"; };
+		CHA0010327000003000CHATT /* ChattaTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaTheme.swift; sourceTree = "<group>"; };
+		CHA0010427000004000CHATT /* ChattaLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaLogo.swift; sourceTree = "<group>"; };
+		CHA0010527000005000CHATT /* ChattaComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaComponents.swift; sourceTree = "<group>"; };
+		CHA0010627000006000CHATT /* ChattaQRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaQRScanner.swift; sourceTree = "<group>"; };
+		CHA0010727000007000CHATT /* ChattaNavigationState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaNavigationState.swift; sourceTree = "<group>"; };
+		CHA0010827000008000CHATT /* ChattaHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaHomeView.swift; sourceTree = "<group>"; };
+		CHA0010927000009000CHATT /* ChattaChatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaChatsView.swift; sourceTree = "<group>"; };
+		CHA0011027000010000CHATT /* ChattaChatDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaChatDetailView.swift; sourceTree = "<group>"; };
+		CHA0011127000011000CHATT /* ChattaSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaSettingsView.swift; sourceTree = "<group>"; };
+		CHA0011227000012000CHATT /* ChattaConnectMateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChattaConnectMateView.swift; sourceTree = "<group>"; };
 		231B3F1F2D087A4C0069A07D /* MetricsColumnList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricsColumnList.swift; sourceTree = "<group>"; };
 		231B3F202D087A4C0069A07D /* MetricTableColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetricTableColumn.swift; sourceTree = "<group>"; };
 		231B3F242D087C3C0069A07D /* EnvironmentDefaultColumns.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnvironmentDefaultColumns.swift; sourceTree = "<group>"; };
@@ -590,6 +614,57 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		CHA0020027000000000CHATT /* Chatta */ = {
+			isa = PBXGroup;
+			children = (
+				CHA0010127000001000CHATT /* ChattaAppConfig.swift */,
+				CHA0010227000002000CHATT /* ChattaAppRootView.swift */,
+				CHA0020127000001000CHATT /* Theme */,
+				CHA0020227000002000CHATT /* Components */,
+				CHA0020327000003000CHATT /* Navigation */,
+				CHA0020427000004000CHATT /* Views */,
+			);
+			path = Chatta;
+			sourceTree = "<group>";
+		};
+		CHA0020127000001000CHATT /* Theme */ = {
+			isa = PBXGroup;
+			children = (
+				CHA0010327000003000CHATT /* ChattaTheme.swift */,
+			);
+			path = Theme;
+			sourceTree = "<group>";
+		};
+		CHA0020227000002000CHATT /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				CHA0010427000004000CHATT /* ChattaLogo.swift */,
+				CHA0010527000005000CHATT /* ChattaComponents.swift */,
+				CHA0010627000006000CHATT /* ChattaQRScanner.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
+		CHA0020327000003000CHATT /* Navigation */ = {
+			isa = PBXGroup;
+			children = (
+				CHA0010727000007000CHATT /* ChattaNavigationState.swift */,
+			);
+			path = Navigation;
+			sourceTree = "<group>";
+		};
+		CHA0020427000004000CHATT /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				CHA0010827000008000CHATT /* ChattaHomeView.swift */,
+				CHA0010927000009000CHATT /* ChattaChatsView.swift */,
+				CHA0011027000010000CHATT /* ChattaChatDetailView.swift */,
+				CHA0011127000011000CHATT /* ChattaSettingsView.swift */,
+				CHA0011227000012000CHATT /* ChattaConnectMateView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
 		231B3F1E2D0879BC0069A07D /* Metrics Visualization */ = {
 			isa = PBXGroup;
 			children = (
@@ -945,6 +1020,7 @@
 		DDC2E15626CE248E0042C5E4 /* Meshtastic */ = {
 			isa = PBXGroup;
 			children = (
+				CHA0020027000000000CHATT /* Chatta */,
 				BCB6137F2C6728E700485544 /* AppIntents */,
 				DD1BD0EC2C603C5B008C0C70 /* Measurement */,
 				25F5D5BC2C3F6D7B008036E3 /* Router */,
@@ -1354,6 +1430,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CHA0000127000001000CHATT /* ChattaAppConfig.swift in Sources */,
+				CHA0000227000002000CHATT /* ChattaAppRootView.swift in Sources */,
+				CHA0000327000003000CHATT /* ChattaTheme.swift in Sources */,
+				CHA0000427000004000CHATT /* ChattaLogo.swift in Sources */,
+				CHA0000527000005000CHATT /* ChattaComponents.swift in Sources */,
+				CHA0000627000006000CHATT /* ChattaQRScanner.swift in Sources */,
+				CHA0000727000007000CHATT /* ChattaNavigationState.swift in Sources */,
+				CHA0000827000008000CHATT /* ChattaHomeView.swift in Sources */,
+				CHA0000927000009000CHATT /* ChattaChatsView.swift in Sources */,
+				CHA0001027000010000CHATT /* ChattaChatDetailView.swift in Sources */,
+				CHA0001127000011000CHATT /* ChattaSettingsView.swift in Sources */,
+				CHA0001227000012000CHATT /* ChattaConnectMateView.swift in Sources */,
 				25F26B1F2C2F611300C9CD9D /* AppData.swift in Sources */,
 				25F26B1E2C2F610D00C9CD9D /* Logger.swift in Sources */,
 				259792252C2F114500AD1659 /* ChannelEntityExtension.swift in Sources */,

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Meshtastic</string>
+	<string>Chatta</string>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -65,23 +65,23 @@
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
-	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
+	<string>Chatta uses Bluetooth to connect to your mesh device for secure messaging</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth is used to connect an iPhone to a user&apos;s meshtastic device to allow text messaging and location data for the mesh network.</string>
+	<string>Chatta uses Bluetooth to connect your iPhone to your mesh device for secure text messaging and location sharing.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>We use the camera to share channels using a QR Code</string>
+	<string>Chatta uses the camera to scan QR codes for adding mates and joining networks</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device. Route Recording uses location in the background.</string>
+	<string>Chatta uses your location to share with your mates on the mesh network and display on maps.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
+	<string>Chatta uses your location to share with your mates on the mesh network.</string>
 	<key>NSLocationUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
+	<string>Chatta uses your location to share with your mates on the mesh network.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to display it on the mesh map as well as to have GPS coordinates to send to the connected device.</string>
+	<string>Chatta uses your location to share with your mates on the mesh network.</string>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
 	<key>Privacy – Bluetooth Always Usage Description</key>
-	<string>We use bluetooth to connect to nearby Meshtastic Devices</string>
+	<string>Chatta uses Bluetooth to connect to your mesh device for secure messaging</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
