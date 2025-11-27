@@ -44,10 +44,17 @@ struct MeshtasticAppleApp: App {
 
     var body: some Scene {
         WindowGroup {
-			ContentView(
-				appState: appState,
-				router: appState.router
-			)
+			// Use Chatta UI if configured, otherwise use original Meshtastic UI
+			Group {
+				if ChattaAppConfig.useChattaUI {
+					ChattaAppRootView()
+				} else {
+					ContentView(
+						appState: appState,
+						router: appState.router
+					)
+				}
+			}
 			.environment(\.managedObjectContext, persistenceController.container.viewContext)
 			.environmentObject(appState)
 			.environmentObject(BLEManager.shared)
