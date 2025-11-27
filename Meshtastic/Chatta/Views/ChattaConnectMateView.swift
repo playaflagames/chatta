@@ -3,13 +3,23 @@
 
 import SwiftUI
 import CoreImage.CIFilterBuiltins
+import CoreData
+import MeshtasticProtobufs
 
 struct ChattaConnectMateView: View {
+    @Environment(\.managedObjectContext) var context
     @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var navigationState: ChattaNavigationState
 
     @State private var selectedFlow: ConnectionFlow?
     @State private var flowStep: FlowStep = .initial
+
+    // QR Scanner state
+    @State private var showingQRScanner = false
+    @State private var scannedCode: String?
+
+    // Channel URL state
+    @State private var channelURL: String = ""
 
     enum ConnectionFlow {
         case connectDevice
@@ -24,6 +34,7 @@ struct ChattaConnectMateView: View {
         case pinEntry
         case success
         case showQR
+        case scanQR
     }
 
     var body: some View {
@@ -49,6 +60,18 @@ struct ChattaConnectMateView: View {
                 flowContent
 
                 Spacer()
+            }
+        }
+        .onChange(of: bleManager.isConnected) { _, isConnected in
+            if isConnected && flowStep == .pinEntry {
+                // Generate channel URL when connected
+                generateChannelURL()
+                flowStep = .success
+            }
+        }
+        .sheet(isPresented: $showingQRScanner) {
+            ChattaQRScanner(scannedCode: $scannedCode) { code in
+                handleScannedQRCode(code)
             }
         }
     }
@@ -116,7 +139,9 @@ struct ChattaConnectMateView: View {
         switch flowStep {
         case .initial:
             return selectedFlow == .addMate ? "Connect a Mate\nto your Network" : "Connect Your\nChatta!"
-        case .bluetoothPrompt, .searching, .deviceSelection, .pinEntry, .success, .showQR:
+        case .scanQR:
+            return "Join a\nNetwork"
+        default:
             return selectedFlow == .addMate ? "Connect a Mate\nto your Network" : "Connect Your\nChatta!"
         }
     }
@@ -139,6 +164,8 @@ struct ChattaConnectMateView: View {
             successView
         case .showQR:
             showQRView
+        case .scanQR:
+            scanQRPromptView
         }
     }
 
@@ -150,60 +177,110 @@ struct ChattaConnectMateView: View {
                 .foregroundColor(.white)
                 .padding(.top, 40)
 
-            HStack(spacing: 16) {
+            VStack(spacing: 16) {
                 // Connect Your Chatta button
                 Button(action: {
                     selectedFlow = .connectDevice
                     flowStep = .bluetoothPrompt
                 }) {
-                    VStack(spacing: 8) {
+                    HStack(spacing: 12) {
                         Image(systemName: "iphone.radiowaves.left.and.right")
                             .font(.title)
                             .foregroundColor(.chattaGreen)
 
-                        Text("Connect Your")
-                            .font(.chattaButtonSmall)
-                        Text("Chatta")
-                            .font(.chattaButtonSmall)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Connect Your Chatta")
+                                .font(.chattaButtonMedium)
+                                .foregroundColor(.chattaGreen)
+                            Text("Pair with your Meshtastic device")
+                                .font(.chattaCaption)
+                                .foregroundColor(.chattaTextSecondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.chattaGreen)
                     }
-                    .foregroundColor(.chattaGreen)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                     .background(Color.white)
                     .cornerRadius(ChattaDimensions.buttonCornerRadius)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ChattaDimensions.buttonCornerRadius)
-                            .stroke(Color.chattaGreen, lineWidth: 2)
-                    )
                 }
 
-                // Add a Mate button
+                // Add a Mate button (show QR)
                 Button(action: {
                     selectedFlow = .addMate
+                    generateChannelURL()
                     flowStep = .showQR
                 }) {
-                    VStack(spacing: 8) {
-                        Image(systemName: "person.3.fill")
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.badge.plus")
                             .font(.title)
-                            .foregroundColor(.chattaGreen)
+                            .foregroundColor(bleManager.isConnected ? .chattaGreen : .gray)
 
-                        Text("Add a Mate")
-                            .font(.chattaButtonSmall)
-                        Text("to your Network")
-                            .font(.chattaButtonSmall)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Add a Mate to Your Network")
+                                .font(.chattaButtonMedium)
+                                .foregroundColor(bleManager.isConnected ? .chattaGreen : .gray)
+                            Text("Share your network via QR code")
+                                .font(.chattaCaption)
+                                .foregroundColor(.chattaTextSecondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(bleManager.isConnected ? .chattaGreen : .gray)
                     }
-                    .foregroundColor(.chattaGreen)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
                     .background(Color.white)
                     .cornerRadius(ChattaDimensions.buttonCornerRadius)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: ChattaDimensions.buttonCornerRadius)
-                            .stroke(Color.chattaGreen, lineWidth: 2)
-                    )
                 }
+                .disabled(!bleManager.isConnected)
+                .opacity(bleManager.isConnected ? 1.0 : 0.6)
+
+                // Join a Network button (scan QR)
+                Button(action: {
+                    flowStep = .scanQR
+                }) {
+                    HStack(spacing: 12) {
+                        Image(systemName: "qrcode.viewfinder")
+                            .font(.title)
+                            .foregroundColor(bleManager.isConnected ? .chattaGreen : .gray)
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Join a Network")
+                                .font(.chattaButtonMedium)
+                                .foregroundColor(bleManager.isConnected ? .chattaGreen : .gray)
+                            Text("Scan a mate's QR code to join")
+                                .font(.chattaCaption)
+                                .foregroundColor(.chattaTextSecondary)
+                        }
+
+                        Spacer()
+
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(bleManager.isConnected ? .chattaGreen : .gray)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(Color.white)
+                    .cornerRadius(ChattaDimensions.buttonCornerRadius)
+                }
+                .disabled(!bleManager.isConnected)
+                .opacity(bleManager.isConnected ? 1.0 : 0.6)
             }
             .padding(.horizontal, ChattaDimensions.paddingMedium)
+
+            if !bleManager.isConnected {
+                Text("Connect your Chatta device first to add mates or join networks")
+                    .font(.chattaCaption)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
         }
     }
 
@@ -219,7 +296,7 @@ struct ChattaConnectMateView: View {
                 .font(.system(size: 80))
                 .foregroundColor(.white)
 
-            Text("Make sure your bluetooth is turned on and click below when ready!")
+            Text("Make sure your Bluetooth is turned on and your Chatta device is powered up!")
                 .font(.chattaBody)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
@@ -229,7 +306,7 @@ struct ChattaConnectMateView: View {
                 flowStep = .searching
                 bleManager.startScanning()
             }) {
-                Text("Connect!")
+                Text("Search for Devices")
             }
             .buttonStyle(.chattaPrimary)
             .padding(.horizontal, 60)
@@ -244,24 +321,24 @@ struct ChattaConnectMateView: View {
                 .foregroundColor(.white)
                 .padding(.top, 40)
 
-            Text("Searching for nearby Chattas. You'll be connected in no time!")
+            Text("Searching for nearby Chattas...")
                 .font(.chattaTitle3)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
-            // Hourglass animation
-            Image(systemName: "hourglass")
-                .font(.system(size: 80))
-                .foregroundColor(.white)
-                .symbolEffect(.pulse)
+            // Loading animation
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .scaleEffect(2)
+                .padding(.vertical, 40)
 
             // Show found devices or auto-advance after finding
             if !bleManager.peripherals.isEmpty {
                 Button(action: {
                     flowStep = .deviceSelection
                 }) {
-                    Text("Found \(bleManager.peripherals.count) device(s)")
+                    Text("Found \(bleManager.peripherals.count) device(s) - Tap to select")
                         .font(.chattaBodyBold)
                         .foregroundColor(.chattaGreen)
                         .padding()
@@ -269,12 +346,16 @@ struct ChattaConnectMateView: View {
                         .cornerRadius(ChattaDimensions.buttonCornerRadius)
                 }
             }
+
+            Text("Make sure your device is on and in range")
+                .font(.chattaCaption)
+                .foregroundColor(.white.opacity(0.8))
         }
         .onChange(of: bleManager.peripherals.count) { _, newCount in
             if newCount > 0 {
                 // Auto-advance after a short delay
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-                    if flowStep == .searching {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                    if flowStep == .searching && !bleManager.peripherals.isEmpty {
                         flowStep = .deviceSelection
                     }
                 }
@@ -290,36 +371,89 @@ struct ChattaConnectMateView: View {
                 .foregroundColor(.white)
                 .padding(.top, 40)
 
-            Text("Which one is yours?")
+            Text("Which device is yours?")
                 .font(.chattaTitle)
                 .foregroundColor(.white)
 
             // Device list
-            VStack(spacing: 12) {
-                ForEach(bleManager.peripherals, id: \.peripheral.identifier) { peripheral in
-                    Button(action: {
-                        bleManager.connectTo(peripheral: peripheral.peripheral)
-                        flowStep = .pinEntry
-                    }) {
-                        HStack {
-                            Image(systemName: "iphone")
-                                .font(.title2)
-                                .foregroundColor(.chattaGreen)
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(bleManager.peripherals, id: \.peripheral.identifier) { peripheral in
+                        Button(action: {
+                            bleManager.connectTo(peripheral: peripheral.peripheral)
+                            flowStep = .pinEntry
+                        }) {
+                            HStack {
+                                Image(systemName: "antenna.radiowaves.left.and.right")
+                                    .font(.title2)
+                                    .foregroundColor(.chattaGreen)
 
-                            Text(peripheral.shortName)
-                                .font(.chattaBodyBold)
-                                .foregroundColor(.chattaGreen)
+                                VStack(alignment: .leading) {
+                                    Text(peripheral.longName)
+                                        .font(.chattaBodyBold)
+                                        .foregroundColor(.chattaGreen)
+                                    Text(peripheral.shortName)
+                                        .font(.chattaCaption)
+                                        .foregroundColor(.chattaTextSecondary)
+                                }
+
+                                Spacer()
+
+                                // Signal strength indicator
+                                SignalStrengthIndicator(rssi: peripheral.rssi)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.white)
+                            .cornerRadius(ChattaDimensions.buttonCornerRadius)
                         }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.white)
-                        .cornerRadius(ChattaDimensions.buttonCornerRadius)
                     }
                 }
             }
-            .padding(.horizontal, 60)
+            .frame(maxHeight: 300)
+            .padding(.horizontal, 40)
 
-            Text("Your Chatta ID is located on the back of your device")
+            Text("Tap on your device to connect. Your device name is shown on its screen.")
+                .font(.chattaCaption)
+                .foregroundColor(.white.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Button(action: {
+                bleManager.startScanning()
+            }) {
+                Text("Scan Again")
+            }
+            .buttonStyle(.chattaOutline)
+        }
+    }
+
+    // MARK: - PIN Entry View (iOS handles this natively)
+    @State private var pinCode = ""
+
+    private var pinEntryView: some View {
+        VStack(spacing: 24) {
+            Image(systemName: "lock.shield")
+                .font(.system(size: 60))
+                .foregroundColor(.white)
+                .padding(.top, 40)
+
+            Text("Connecting...")
+                .font(.chattaTitle)
+                .foregroundColor(.white)
+
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                .scaleEffect(1.5)
+                .padding()
+
+            Text("If prompted, enter the PIN shown on your Chatta device. The default PIN is 3891.")
+                .font(.chattaBody)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
+            Text("iOS will show a pairing dialog if this is your first time connecting.")
                 .font(.chattaCaption)
                 .foregroundColor(.white.opacity(0.8))
                 .multilineTextAlignment(.center)
@@ -327,75 +461,25 @@ struct ChattaConnectMateView: View {
         }
     }
 
-    // MARK: - PIN Entry View
-    @State private var pinCode = ""
-
-    private var pinEntryView: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "iphone.radiowaves.left.and.right")
-                .font(.system(size: 50))
-                .foregroundColor(.white)
-                .padding(.top, 40)
-
-            Text("What's Your Pin?")
-                .font(.chattaTitle)
-                .foregroundColor(.white)
-
-            TextField("Enter PIN Number...", text: $pinCode)
-                .keyboardType(.numberPad)
-                .font(.chattaBody)
-                .multilineTextAlignment(.center)
-                .padding()
-                .background(Color.white)
-                .cornerRadius(ChattaDimensions.buttonCornerRadius)
-                .padding(.horizontal, 60)
-
-            Text("First Time Connecting?")
-                .font(.chattaBodyBold)
-                .foregroundColor(.white)
-
-            Text("Your device PIN is set at 3891 - you can change it in settings at any time!")
-                .font(.chattaCaption)
-                .foregroundColor(.white.opacity(0.9))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
-
-            Button(action: {
-                flowStep = .success
-            }) {
-                Text("Connect")
-            }
-            .buttonStyle(.chattaPrimary)
-            .padding(.horizontal, 60)
-        }
-        .onChange(of: bleManager.isConnected) { _, isConnected in
-            if isConnected {
-                flowStep = .success
-            }
-        }
-    }
-
     // MARK: - Success View
     private var successView: some View {
         VStack(spacing: 24) {
-            Text("You're amazing! You've done it! You're connected and ready to start a Chatta!")
-                .font(.chattaTitle3)
+            Text("You're Connected!")
+                .font(.chattaTitle)
                 .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
                 .padding(.top, 40)
 
-            Image(systemName: "checkmark")
-                .font(.system(size: 100, weight: .bold))
-                .foregroundColor(.white.opacity(0.7))
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 100))
+                .foregroundColor(.white)
 
-            Text("Now to connect you to your Mates. Get them to scan the below code, or you can scan the code on their phone to get started!")
+            Text("Your Chatta is ready to use. Share the QR code below to let your mates join your secure network.")
                 .font(.chattaBody)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
 
-            // QR Code placeholder
+            // QR Code
             if let qrImage = generateQRCode() {
                 Image(uiImage: qrImage)
                     .interpolation(.none)
@@ -405,36 +489,56 @@ struct ChattaConnectMateView: View {
                     .background(Color.white)
                     .padding(8)
                     .background(Color.white)
+                    .cornerRadius(12)
             }
 
-            Button(action: {
-                navigationState.goHome()
-            }) {
-                HStack {
-                    Image(systemName: "house.fill")
-                    Text("Home")
+            HStack(spacing: 16) {
+                Button(action: {
+                    navigationState.goHome()
+                }) {
+                    HStack {
+                        Image(systemName: "house.fill")
+                        Text("Home")
+                    }
+                }
+                .buttonStyle(.chattaPrimary)
+
+                if bleManager.isConnected && !channelURL.isEmpty {
+                    ShareLink(
+                        item: channelURL,
+                        subject: Text("Join my Chatta Network"),
+                        message: Text("Scan this link or QR code to join my secure Chatta network")
+                    ) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share")
+                        }
+                        .font(.chattaButtonMedium)
+                        .foregroundColor(.chattaGreen)
+                        .padding(.horizontal, 24)
+                        .frame(height: ChattaDimensions.primaryButtonHeight)
+                        .background(Color.white)
+                        .cornerRadius(ChattaDimensions.buttonCornerRadius)
+                    }
                 }
             }
-            .buttonStyle(.chattaPrimary)
-            .padding(.horizontal, 100)
+            .padding(.horizontal, 40)
         }
     }
 
     // MARK: - Show QR View (Add Mate)
     private var showQRView: some View {
         VStack(spacing: 24) {
-            Text("Yay! Friends! Let's Add a Mate to Your Network!")
-                .font(.chattaTitle3)
+            Text("Share Your Network")
+                .font(.chattaTitle)
                 .foregroundColor(.white)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 40)
                 .padding(.top, 40)
 
             Image(systemName: "person.3.fill")
                 .font(.system(size: 60))
                 .foregroundColor(.white)
 
-            Text("Get them to scan the below QR code to join your super secure network:")
+            Text("Your mate can scan this QR code to join your secure Chatta network")
                 .font(.chattaBody)
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
@@ -450,26 +554,98 @@ struct ChattaConnectMateView: View {
                     .background(Color.white)
                     .padding(12)
                     .background(Color.white)
+                    .cornerRadius(16)
             } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white)
-                    .frame(width: 200, height: 200)
-                    .overlay(
-                        Text("QR Code")
-                            .foregroundColor(.gray)
-                    )
+                VStack {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 40))
+                        .foregroundColor(.white)
+                    Text("No channel configured")
+                        .font(.chattaCaption)
+                        .foregroundColor(.white)
+                }
+                .frame(width: 200, height: 200)
+                .background(Color.white.opacity(0.2))
+                .cornerRadius(16)
             }
 
+            // Security info
+            HStack {
+                Image(systemName: "lock.fill")
+                    .foregroundColor(.white)
+                Text("Encrypted with 256-bit AES")
+                    .font(.chattaCaption)
+                    .foregroundColor(.white.opacity(0.9))
+            }
+
+            HStack(spacing: 16) {
+                Button(action: {
+                    navigationState.goHome()
+                }) {
+                    HStack {
+                        Image(systemName: "house.fill")
+                        Text("Home")
+                    }
+                }
+                .buttonStyle(.chattaPrimary)
+
+                if !channelURL.isEmpty {
+                    ShareLink(
+                        item: channelURL,
+                        subject: Text("Join my Chatta Network"),
+                        message: Text("Scan this link or QR code to join my secure Chatta network")
+                    ) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Share")
+                        }
+                        .font(.chattaButtonMedium)
+                        .foregroundColor(.chattaGreen)
+                        .padding(.horizontal, 24)
+                        .frame(height: ChattaDimensions.primaryButtonHeight)
+                        .background(Color.white)
+                        .cornerRadius(ChattaDimensions.buttonCornerRadius)
+                    }
+                }
+            }
+            .padding(.horizontal, 40)
+        }
+    }
+
+    // MARK: - Scan QR Prompt View
+    private var scanQRPromptView: some View {
+        VStack(spacing: 32) {
+            Text("Join a Network")
+                .font(.chattaTitle)
+                .foregroundColor(.white)
+                .padding(.top, 40)
+
+            Image(systemName: "qrcode.viewfinder")
+                .font(.system(size: 80))
+                .foregroundColor(.white)
+
+            Text("Scan your mate's QR code to join their secure Chatta network")
+                .font(.chattaBody)
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+
             Button(action: {
-                navigationState.goHome()
+                showingQRScanner = true
             }) {
                 HStack {
-                    Image(systemName: "house.fill")
-                    Text("Home")
+                    Image(systemName: "camera.fill")
+                    Text("Open Scanner")
                 }
             }
             .buttonStyle(.chattaPrimary)
-            .padding(.horizontal, 100)
+            .padding(.horizontal, 60)
+
+            Text("Your mate's channel settings will be securely added to your device")
+                .font(.chattaCaption)
+                .foregroundColor(.white.opacity(0.8))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
         }
     }
 
@@ -488,15 +664,75 @@ struct ChattaConnectMateView: View {
             flowStep = .deviceSelection
         case .success, .showQR:
             navigationState.goHome()
+        case .scanQR:
+            flowStep = .initial
         case .initial:
             navigationState.goHome()
         }
     }
 
+    private func generateChannelURL() {
+        // Get the connected node's channel configuration
+        guard let connectedNode = bleManager.connectedPeripheral,
+              connectedNode.num > 0 else {
+            channelURL = ""
+            return
+        }
+
+        let nodeNum = Int64(connectedNode.num)
+
+        // Fetch the node info from Core Data
+        let fetchRequest: NSFetchRequest<NodeInfoEntity> = NodeInfoEntity.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "num == %lld", nodeNum)
+        fetchRequest.fetchLimit = 1
+
+        do {
+            if let node = try context.fetch(fetchRequest).first,
+               let myInfo = node.myInfo,
+               let channels = myInfo.channels?.array as? [ChannelEntity] {
+
+                var channelSet = ChannelSet()
+
+                // Add LoRa config
+                if let loraConfig = node.loRaConfig {
+                    var loRaConfig = Config.LoRaConfig()
+                    loRaConfig.region = RegionCodes(rawValue: Int(loraConfig.regionCode))?.protoEnumValue() ?? .unset
+                    loRaConfig.modemPreset = ModemPresets(rawValue: Int(loraConfig.modemPreset))?.protoEnumValue() ?? .longFast
+                    loRaConfig.bandwidth = UInt32(loraConfig.bandwidth)
+                    loRaConfig.spreadFactor = UInt32(loraConfig.spreadFactor)
+                    loRaConfig.codingRate = UInt32(loraConfig.codingRate)
+                    loRaConfig.frequencyOffset = loraConfig.frequencyOffset
+                    loRaConfig.hopLimit = UInt32(loraConfig.hopLimit)
+                    loRaConfig.txEnabled = loraConfig.txEnabled
+                    loRaConfig.txPower = loraConfig.txPower
+                    loRaConfig.usePreset = loraConfig.usePreset
+                    loRaConfig.channelNum = UInt32(loraConfig.channelNum)
+                    channelSet.loraConfig = loRaConfig
+                }
+
+                // Add channels
+                for channel in channels where channel.role > 0 {
+                    var channelSettings = ChannelSettings()
+                    channelSettings.name = channel.name ?? ""
+                    channelSettings.psk = channel.psk ?? Data()
+                    channelSettings.id = UInt32(channel.id)
+                    channelSet.settings.append(channelSettings)
+                }
+
+                // Generate URL
+                if let settingsData = try? channelSet.serializedData() {
+                    let base64String = settingsData.base64EncodedString().base64ToBase64url()
+                    channelURL = "https://meshtastic.org/e/#\(base64String)"
+                }
+            }
+        } catch {
+            print("Error fetching node info: \(error)")
+            channelURL = ""
+        }
+    }
+
     private func generateQRCode() -> UIImage? {
-        // Generate a channel sharing QR code
-        // This would use the actual channel config in a real implementation
-        let channelURL = "https://meshtastic.org/e/#ChattaNetwork"
+        guard !channelURL.isEmpty else { return nil }
 
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
@@ -510,6 +746,46 @@ struct ChattaConnectMateView: View {
         guard let cgImage = context.createCGImage(scaledImage, from: scaledImage.extent) else { return nil }
 
         return UIImage(cgImage: cgImage)
+    }
+
+    private func handleScannedQRCode(_ code: String) {
+        // Extract channel settings from the URL
+        guard code.lowercased().contains("meshtastic.org/e/") else { return }
+
+        if let components = code.components(separatedBy: "#").last {
+            let addChannels = code.lowercased().contains("add=true")
+            let channelSettings = components.components(separatedBy: "?").first ?? components
+
+            // Save the channel settings
+            let success = bleManager.saveChannelSet(base64UrlString: channelSettings, addChannels: addChannels)
+
+            if success {
+                // Show success and go back
+                flowStep = .success
+            }
+        }
+    }
+}
+
+// MARK: - Signal Strength Indicator
+struct SignalStrengthIndicator: View {
+    let rssi: Int
+
+    var signalBars: Int {
+        if rssi >= -50 { return 4 }
+        if rssi >= -60 { return 3 }
+        if rssi >= -70 { return 2 }
+        return 1
+    }
+
+    var body: some View {
+        HStack(spacing: 2) {
+            ForEach(0..<4, id: \.self) { index in
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(index < signalBars ? Color.chattaGreen : Color.gray.opacity(0.3))
+                    .frame(width: 4, height: CGFloat(6 + index * 4))
+            }
+        }
     }
 }
 
