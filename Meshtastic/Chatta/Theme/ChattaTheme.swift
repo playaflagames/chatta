@@ -30,9 +30,10 @@ extension Color {
 
 // MARK: - Fonts
 extension Font {
-    // Logo font - rounded, friendly
-    static let chattaLogo = Font.system(size: 48, weight: .bold, design: .rounded)
-    static let chattaLogoSmall = Font.system(size: 32, weight: .bold, design: .rounded)
+    // Logo font - custom "meh" font
+    static let chattaLogo = Font.custom("meh", size: 48)
+    static let chattaLogoSmall = Font.custom("meh", size: 32)
+    static let chattaLogoLarge = Font.custom("meh", size: 64)
 
     // Titles
     static let chattaTitle = Font.system(size: 32, weight: .bold, design: .rounded)

@@ -1,5 +1,5 @@
 // Chatta Logo Component
-// Displays the chat bubble logo with optional text
+// Displays the logo using image assets with custom font
 
 import SwiftUI
 
@@ -8,6 +8,52 @@ struct ChattaLogo: View {
         case small   // For headers
         case medium  // For navigation bars
         case large   // For home screen
+
+        var logoHeight: CGFloat {
+            switch self {
+            case .small: return 50
+            case .medium: return 80
+            case .large: return 150
+            }
+        }
+
+        var iconHeight: CGFloat {
+            switch self {
+            case .small: return 40
+            case .medium: return 60
+            case .large: return 100
+            }
+        }
+    }
+
+    var size: Size = .large
+    var showText: Bool = true
+    var useGreenBubble: Bool = false  // For Chats view header (uses programmatic fallback)
+
+    var body: some View {
+        if showText {
+            // Full logo with text - use chatta_logo.png
+            Image("chatta-logo")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: size.logoHeight)
+        } else {
+            // Icon only - use icon_only.jpg
+            Image("icon-only")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(height: size.iconHeight)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+}
+
+// Fallback programmatic logo (used when images aren't available)
+struct ChattaLogoFallback: View {
+    enum Size {
+        case small
+        case medium
+        case large
 
         var bubbleSize: CGFloat {
             switch self {
@@ -28,7 +74,7 @@ struct ChattaLogo: View {
 
     var size: Size = .large
     var showText: Bool = true
-    var useGreenBubble: Bool = false  // For Chats view header
+    var useGreenBubble: Bool = false
 
     var body: some View {
         VStack(spacing: size == .large ? 0 : -8) {
@@ -51,7 +97,7 @@ struct ChattaLogo: View {
             // Logo text
             if showText {
                 Text("chatta")
-                    .font(.system(size: size.fontSize, weight: .bold, design: .rounded))
+                    .font(.chattaLogo)
                     .foregroundColor(.white)
                     .shadow(color: .black.opacity(0.3), radius: 2, x: 1, y: 1)
             }
@@ -176,7 +222,7 @@ struct ConnectionStatusDot: View {
         VStack(spacing: 40) {
             ChattaLogo(size: .large)
             ChattaLogo(size: .medium)
-            ChattaLogo(size: .small)
+            ChattaLogo(size: .small, showText: false)
         }
     }
 }
