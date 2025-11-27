@@ -274,7 +274,7 @@ struct ChattaChatsView: View {
     private func isUserOnline(_ user: UserEntity) -> Bool {
         guard let lastHeard = user.userNode?.lastHeard else { return false }
         let twoHoursAgo = Calendar.current.date(byAdding: .minute, value: -120, to: Date()) ?? Date()
-        return Date(timeIntervalSince1970: TimeInterval(lastHeard)) >= twoHoursAgo
+        return lastHeard >= twoHoursAgo
     }
 
     private func formatTimestamp(_ date: Date) -> String {
