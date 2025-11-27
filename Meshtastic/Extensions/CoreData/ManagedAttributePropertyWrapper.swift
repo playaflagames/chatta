@@ -41,7 +41,7 @@ public struct ManagedAttribute<Value: Numeric> {
 		set { fatalError("Access via enclosing instance required.") }
 	}
 
-	public static subscript<EnclosingSelf: NSManagedObject>(
+	nonisolated public static subscript<EnclosingSelf: NSManagedObject>(
 		_enclosingInstance observed: EnclosingSelf,
 		wrapped wrappedKeyPath: KeyPath<EnclosingSelf, Value?>,
 		storage storageKeyPath: ReferenceWritableKeyPath<EnclosingSelf, ManagedAttribute<Value>>
