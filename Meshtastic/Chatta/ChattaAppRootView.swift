@@ -12,22 +12,44 @@ struct ChattaAppRootView: View {
 
     @Environment(\.managedObjectContext) private var context
 
-    var body: some View {
-        NavigationStack(path: $navigationState.navigationPath) {
-            ZStack {
-                // Background
-                Color.chattaGreen
-                    .ignoresSafeArea()
+    // Splash screen state
+    @State private var showSplash = true
+    private let splashDuration: Double = 2.5
 
-                // Main content based on current screen
-                mainContent
+    var body: some View {
+        ZStack {
+            // Main app content
+            NavigationStack(path: $navigationState.navigationPath) {
+                ZStack {
+                    // Background
+                    Color.chattaGreen
+                        .ignoresSafeArea()
+
+                    // Main content based on current screen
+                    mainContent
+                }
+                .animation(.easeInOut(duration: 0.25), value: navigationState.currentScreen)
+                .navigationDestination(for: ChattaNavigationState.ChattaDestination.self) { destination in
+                    destinationView(for: destination)
+                }
             }
-            .animation(.easeInOut(duration: 0.25), value: navigationState.currentScreen)
-            .navigationDestination(for: ChattaNavigationState.ChattaDestination.self) { destination in
-                destinationView(for: destination)
+            .environmentObject(navigationState)
+
+            // Splash screen overlay
+            if showSplash {
+                ChattaSplashScreen()
+                    .transition(.opacity)
+                    .zIndex(1)
             }
         }
-        .environmentObject(navigationState)
+        .onAppear {
+            // Hide splash after duration
+            DispatchQueue.main.asyncAfter(deadline: .now() + splashDuration) {
+                withAnimation(.easeOut(duration: 0.5)) {
+                    showSplash = false
+                }
+            }
+        }
     }
 
     @ViewBuilder
