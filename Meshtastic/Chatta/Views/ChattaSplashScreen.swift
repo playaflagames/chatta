@@ -6,7 +6,6 @@ import SwiftUI
 struct ChattaSplashScreen: View {
     @State private var isAnimating = false
     @State private var showLogo = false
-    @State private var showText = false
     @State private var pulsing = false
 
     var body: some View {
@@ -25,36 +24,17 @@ struct ChattaSplashScreen: View {
             VStack(spacing: 20) {
                 Spacer()
 
-                // Logo animation
-                ZStack {
-                    // Back bubble (grey/lavender)
-                    ChatBubbleShape(isFlipped: false)
-                        .fill(Color.chattaLogoBubbleGrey)
-                        .frame(width: 110, height: 95)
-                        .offset(x: -20, y: 0)
-                        .opacity(showLogo ? 1 : 0)
-                        .scaleEffect(showLogo ? 1 : 0.5)
+                // Logo animation - using image asset
+                Image("chatta-logo")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(height: 180)
+                    .opacity(showLogo ? 1 : 0)
+                    .scaleEffect(showLogo ? 1 : 0.5)
+                    .scaleEffect(pulsing ? 1.02 : 1.0)
+                    .animation(.spring(response: 0.6, dampingFraction: 0.7), value: showLogo)
 
-                    // Front bubble (white)
-                    ChatBubbleShape(isFlipped: true)
-                        .fill(Color.white)
-                        .frame(width: 110, height: 95)
-                        .offset(x: 20, y: -15)
-                        .opacity(showLogo ? 1 : 0)
-                        .scaleEffect(showLogo ? 1 : 0.5)
-                        .scaleEffect(pulsing ? 1.02 : 1.0)
-                }
-                .frame(width: 160, height: 130)
-                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: showLogo)
-
-                // Logo text
-                Text("chatta")
-                    .font(.chattaLogoLarge)
-                    .foregroundColor(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 4, x: 2, y: 2)
-                    .opacity(showText ? 1 : 0)
-                    .offset(y: showText ? 0 : 20)
-                    .animation(.easeOut(duration: 0.5).delay(0.3), value: showText)
+                // Note: Logo text is included in the chatta-logo image asset
 
                 Spacer()
 
@@ -72,7 +52,6 @@ struct ChattaSplashScreen: View {
                 showLogo = true
             }
             withAnimation {
-                showText = true
                 isAnimating = true
             }
             // Subtle pulse animation
